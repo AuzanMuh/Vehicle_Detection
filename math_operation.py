@@ -22,9 +22,9 @@ def centeroidPinHoleMode(height, focal, altitude, theta, yCoordinate):
     delta = round(delta, 4)
 
     if (theta + delta) > 90.0:
-        Lcenteroid = "unknown length"
+        lCentroid = "unknown distance"
 
-    #print "delta: {0} | lCentroid: {1}".format(delta, lCentroid)
+    # print "delta: {0} | lCentroid: {1}".format(delta, lCentroid)
     return lCentroid
 
 def vertikalPinHoleModel(height, focal, altitude, theta, y1, y2, maxHighLV, maxHighHV, maxLengthLV):
@@ -78,7 +78,7 @@ def vertikalPinHoleModel(height, focal, altitude, theta, y1, y2, maxHighLV, maxH
     X2GHV = round(X2GHV, 4)
     Lv = round(Lv, 3)
 
-    #print "delta1: {0} | delta2: {1} | Lx1: {2} | Lx2: {3} | X2GLV: {4} | X2GHVC: {5}| Lv: {6}".format(delta1, delta2, Lx1, Lx2, X2GLV, X2GHV, Lv)
+    # print "delta1: {0} | delta2: {1} | Lx1: {2} | Lx2: {3} | X2GLV: {4} | X2GHVC: {5}| Lv: {6}".format(delta1, delta2, Lx1, Lx2, X2GLV, X2GHV, Lv)
     return Lv
 
 def horizontalPinHoleModel(width, focal, altitude, x1, x2, lengthObject):
@@ -102,9 +102,9 @@ def horizontalPinHoleModel(width, focal, altitude, x1, x2, lengthObject):
     Lw2 = math.tan(math.radians(delta2)) * OX
 
     if (x1 <= width / 2) and (x2 >= width / 2):
-        widthObject = round((Lw2 + Lw1), 3)
+        Lw = round((Lw2 + Lw1), 3)
     else:
-        widthObject = round(math.fabs(Lw2 - Lw1), 3)
+        Lw = round(math.fabs(Lw2 - Lw1), 3)
 
     delta1 = round(delta1, 3)
     delta2 = round(delta2, 3)
@@ -113,8 +113,8 @@ def horizontalPinHoleModel(width, focal, altitude, x1, x2, lengthObject):
     Lw1 = round(Lw1, 4)
     Lw2 = round(Lw2, 4)
 
-    #print "delta1: {0} | delta2: {1} | Length: {2} | OX: {3} | Lw1: {4} | Lw2: {5} | widthObject: {6}".format(delta1, delta2, lengthObject, OX, Lw1, Lw2, widthObject)
-    return widthObject
+    # print "delta1: {0} | delta2: {1} | Length: {2} | OX: {3} | Lw1: {4} | Lw2: {5} | widthObject: {6}".format(delta1, delta2, lengthObject, OX, Lw1, Lw2, Lw)
+    return Lw
 
 def funcY_line(x1, y1, x2, y2, X):
     # m : line gradient
@@ -167,7 +167,7 @@ def transformDiagonalFOV(fov):
 
     return horizontalFOV, verticalFOV
 
-def distancetwoPoint(x1, y1, x2, y2):
+def euclideanDistance(x1, y1, x2, y2):
     x1 = float(x1)
     y1 = float(y1)
     x2 = float(x2)
@@ -184,3 +184,26 @@ def determineCropFactor(sensorwidth, sensorheight):
     cropfactor = math.sqrt(math.pow(36, 2) + math.pow(24, 2)) / math.sqrt(math.pow(sensorheight, 2) + math.pow(sensorwidth, 2))
 
     return cropfactor
+
+def getCoordinateFromDistance(height, focal, altitude, theta, distance):
+    # height    : jumlah baris (piksel)
+    # focal     : panjang focal length kamera (piksel)
+    # altitude  : ketinggian kamera
+    # theta     : kemiringan kamera
+    # distance  : jarak yang ingin diketahui lokasinya
+
+    distance = float(distance)
+    altitude = float(altitude)
+    focal = float(focal)
+
+    alpha = math.degrees(math.atan(distance / altitude))
+    delta = theta - alpha
+    yCoordinate = focal * math.tan(math.radians(delta))
+
+    if alpha <= theta:
+        yCoordinate += (height / 2)
+    elif alpha > theta:
+        yCoordinate = (height / 2) - yCoordinate
+
+    # print "alpha: {0} | delta: {1}".format(alpha, delta)
+    return yCoordinate

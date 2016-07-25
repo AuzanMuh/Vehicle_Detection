@@ -380,7 +380,12 @@ class QtCapture:
             grayShadow = cv2.cvtColor(gaussianBlur_shadowFrame, cv2.COLOR_RGB2GRAY)
             _, thresholdShadow = cv2.threshold(grayShadow, 5, 255, cv2.THRESH_BINARY)
             dilateShadow = cv2.dilate(thresholdShadow, kernel, iterations=3)
-            bin_frame = dilateShadow
+            erodeShadow = cv2.erode(dilateShadow, kernel, iterations=1)
+            #openingShadow = cv2.morphologyEx(thresholdShadow, cv2.MORPH_OPEN, kernel, iterations=2)
+            bin_frame = erodeShadow
+
+            binMerge = cv2.merge([bin_frame, bin_frame, bin_frame])
+            maskShadow = cv2.bitwise_and(PrimRGB_frame, binMerge)
 
         # -- [x] Mask Boundary ROI ------------------------------#
         # IS    : ~
@@ -470,7 +475,7 @@ class QtCapture:
             colorHV = (0, 0, 255)
             thick = 2
             size = 2
-            areaThreshold = 40
+            areaThreshold = 10
 
             if (widthVehicle >= 1.5) and (widthVehicle <= 13.0) and (lengthVehicle >= 2) and (lengthVehicle < 80) and (areaContours >= (float(areaBoundary) * (float(areaThreshold) / 100))):
                 # Get moment for centroid
@@ -532,7 +537,7 @@ class QtCapture:
                     y1 = self.pastListVehicle[i].yCoordinate
                     x2 = self.currentListVehicle[j].xCoordinate
                     y2 = self.currentListVehicle[j].yCoordinate
-                    distance[j][i] = mo.distancetwoPoint(x1, y1, x2, y2)
+                    distance[j][i] = mo.euclideanDistance(x1, y1, x2, y2)
 
             hungarian = Munkres()
             indexes = hungarian.compute(distance)
@@ -540,7 +545,7 @@ class QtCapture:
             for row, column in indexes:
                 self.currentListVehicle[row].idState = self.pastListVehicle[column].idState
 
-                # print "vID: {0} | idState: {1}".format(self.tempList[row].vehicleID, self.tempList[row].idState)
+                # print "vID: {0} | idState: {1}".format(self.pastListVehicle[row].vehicleID, self.pastListVehicle[row].idState)
 
             trackingStatus = True
 
@@ -568,7 +573,7 @@ class QtCapture:
         font = cv2.FONT_HERSHEY_DUPLEX
         thick = 2
         size = 2
-        stopGap = 30
+        stopGap = 40
         changeRegistLine_color = (255, 255, 255)
         changeThick = 4
 
