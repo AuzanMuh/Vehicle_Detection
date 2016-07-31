@@ -7,6 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from _help_init import HelpInit
 from _preview_init import PreviewInit
+from _coordinate_init import GetCoordinate
 
 # Interface Load
 main_ui = uic.loadUiType("gtk/main.ui")[0]
@@ -93,6 +94,7 @@ class MainInit(QMainWindow, main_ui):
 
         # 1.4.3 Registration and Detection Line
         self.pushButton_preview.clicked.connect(self.previewVideo)
+        self.pushButton_calculate.clicked.connect(self.calculateCoordinate)
         # 1.4.3.1 Detection Line
         self.setDetectionLine("500", "122", "615", "122")
         # 1.4.3.2 Registration Line
@@ -517,6 +519,38 @@ class MainInit(QMainWindow, main_ui):
         self.preview = PreviewInit(self.fileLoc)
         self.preview.start()
         self.preview.show()
+
+    def calculateCoordinate(self):
+        # Variable
+        altitude = float(self.getAlt())
+        focal = float(self.getFocal())
+        theta = int(self.getElevated())
+
+        # Set threshold distance for registration and detection line
+        distanceRegistrationLine = 3.0
+        distanceDetectionLine = 2 * float(self.getLengthHV())
+
+        self.getCoordinate = GetCoordinate(altitude, focal, theta)
+        OB = self.getCoordinate.getDistanceOB()
+
+        # Get distance Lreg and Ldet
+        Lreg = OB + distanceRegistrationLine
+        Ldet = OB + distanceRegistrationLine + distanceDetectionLine
+
+        # Get coordinate Yreg and Ydet
+        Yreg = int(self.getCoordinate.getCoordinate(Lreg))
+        Ydet = int(self.getCoordinate.getCoordinate(Ldet))
+
+        # Set to variable detection line and registration line
+        detectX1, detectY1, detectX2, detectY2 = self.getDetectLine()
+        registX1, registY1, registX2, registY2 = self.getRegistrationLine()
+        self.setRegistrationLine(registX1, Yreg, registX2, Yreg)
+        self.setDetectionLine(detectX1, Ydet, detectX2, Ydet)
+
+        print "registration line distance: {0} | detection line distance: {1}".format(distanceRegistrationLine, distanceDetectionLine)
+        print "distance |OB|: {0}".format(OB)
+        print "distance Lreg: {0} | distance Ldet :{1}".format(Lreg, Ldet)
+        print "Coordinate Yreg: {0} | Ydet: {1}".format(Yreg, Ydet)
 
     # Function Tab 2. Video
     def startVideo(self):

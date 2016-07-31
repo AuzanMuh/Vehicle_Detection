@@ -440,33 +440,27 @@ class QtCapture:
             heightInFullFrame = (self.width_frame * 2.0) / 3
             heightSurplus = (heightInFullFrame - self.height_frame) / 2
 
-            x1Vehicle = (self.height_frame + heightSurplus) - (yContour + highContour)
-            x2Vehicle = (self.height_frame + heightSurplus) - yContour
+            y1Vehicle = (self.height_frame + heightSurplus) - (yContour + highContour)
+            y2Vehicle = (self.height_frame + heightSurplus) - yContour
 
             aspectRatioHeight = (sensorWidth / self.width_frame) * heightInFullFrame
-            cropFactor = mo.determineCropFactor(self.sensorWidth, self.sensorHeight)
+            # cropFactor = mo.determineCropFactor(self.sensorWidth, self.sensorHeight)
             horizontalFocal = (((focal * 1) / aspectRatioHeight) * self.height_frame)
-            verticalFocal = (focal / sensorWidth) * self.width_frame
-
-            lengthVehicle = mo.vertikalPinHoleModel(heightInFullFrame, horizontalFocal, altitude, theta, x1Vehicle, x2Vehicle, maxHighLV, maxHighHV, maxLengthLV)
-            centerVehicle = mo.centeroidPinHoleMode(heightInFullFrame, horizontalFocal, altitude, theta, (yContour + highContour))
-            widthVehicle = mo.horizontalPinHoleModel(self.width_frame, verticalFocal, altitude, xContour, (xContour + widthContour), centerVehicle) * 2.5
+            # verticalFocal = (focal / sensorWidth) * self.width_frame
+            lengthVehicle = mo.vertikalPinHoleModel(heightInFullFrame, horizontalFocal, altitude, theta, y1Vehicle, y2Vehicle, maxHighLV, maxHighHV, maxLengthLV)
+            centerVehicle = mo.centeroidPinHoleMode(heightInFullFrame, horizontalFocal, altitude, theta, y1Vehicle)
+            widthVehicle = mo.horizontalPinHoleModel(self.width_frame, horizontalFocal, altitude, xContour, (xContour + widthContour), centerVehicle)
 
             alternative = True
             if alternative:
                 fov = 160.0
-
                 theta = 90.0 - theta
 
                 horizontalFOV, verticalFOV = mo.transformDiagonalFOV(fov)
                 focal = mo.getFocalfromFOV(self.height_frame, verticalFOV)
 
-                lengthVehicle = mo.vertikalPinHoleModel(self.height_frame, focal, altitude, theta, x1Vehicle, x2Vehicle,
+                lengthVehicle = mo.vertikalPinHoleModel(self.height_frame, focal, altitude, theta, y1Vehicle, y2Vehicle,
                                                     maxHighLV, maxHighHV, maxLengthLV)
-                centerVehicle = mo.centeroidPinHoleMode(self.height_frame, focal, altitude, theta, (yContour + highContour))
-
-                focal = mo.getFocalfromFOV(self.width_frame, horizontalFOV)
-                widthVehicle = mo.horizontalPinHoleModel(self.width_frame, focal, altitude, xContour, (xContour + widthContour), centerVehicle)
 
             # -- [x] Draw Boundary -----------------------#
             # IS    :
@@ -477,13 +471,13 @@ class QtCapture:
             size = 2
             areaThreshold = 10
 
-            if (widthVehicle >= 1.5) and (widthVehicle <= 13.0) and (lengthVehicle >= 2) and (lengthVehicle < 80) and (areaContours >= (float(areaBoundary) * (float(areaThreshold) / 100))):
+            if (widthVehicle >= 1.0) and (widthVehicle <= 4.0) and (lengthVehicle >= 2) and (lengthVehicle < 80) and (areaContours >= (float(areaBoundary) * (float(areaThreshold) / 100))):
                 # Get moment for centroid
                 Moment = cv2.moments(cnt)
                 xCentroid = int(Moment['m10'] / Moment['m00'])
                 yCentroid = int(Moment['m01'] / Moment['m00'])
 
-                # print "length: {0} | width: {1}".format(lengthVehicle, widthVehicle)
+                print "length: {0} | width: {1}".format(lengthVehicle, widthVehicle)
 
                 # -- [x] Vehicle Classification -------------#
                 # IS    :
@@ -544,7 +538,6 @@ class QtCapture:
 
             for row, column in indexes:
                 self.currentListVehicle[row].idState = self.pastListVehicle[column].idState
-
                 # print "vID: {0} | idState: {1}".format(self.pastListVehicle[row].vehicleID, self.pastListVehicle[row].idState)
 
             trackingStatus = True
@@ -573,7 +566,7 @@ class QtCapture:
         font = cv2.FONT_HERSHEY_DUPLEX
         thick = 2
         size = 2
-        stopGap = 40
+        stopGap = 200
         changeRegistLine_color = (255, 255, 255)
         changeThick = 4
 
@@ -582,6 +575,7 @@ class QtCapture:
                 vehicleID = self.currentListVehicle[i].vehicleID
                 xCentroid = self.currentListVehicle[i].xCoordinate
                 yCentroid = self.currentListVehicle[i].yCoordinate
+                yFront = self.currentListVehicle[i].yContour + self.currentListVehicle[i].highContour
                 lengthVehicle = self.currentListVehicle[i].vehicleLength
                 vehicleClassification = self.currentListVehicle[i].vehicleClass
                 idState = self.currentListVehicle[i].idState
@@ -597,14 +591,14 @@ class QtCapture:
 
                 # print "predictRegist: {0} | predictDetect : {1}".format(yPredictRegist, yPredictDetect)
 
-                if (yCentroid > yPredictRegist - stopGap) and (yCentroid < yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2) and (idState is False):
+                if (yFront > yPredictDetect + stopGap) and (yFront < yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2) and (idState is False):
                     self.pastListVehicle[i].idState = True
 
-                if (yCentroid < yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2):
-                    cv2.circle(PrimRGB_frame, (xCentroid, yCentroid), size, (0, 0, 255), thick)
+                if (yFront < yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2):
+                    cv2.circle(PrimRGB_frame, (xCentroid, yFront), size, (0, 0, 255), thick)
                     cv2.putText(PrimRGB_frame, "{0}".format(vehicleID), (xCentroid + 1, yCentroid + 1), font, 1, (0, 0, 255))
 
-                if (yCentroid > yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2) and (idState is True):
+                if (yFront > yPredictRegist) and (xCentroid >= registX1) and (xCentroid <= registX2) and (idState is True):
                     if countClass == "LV":
                         self.total_LV += 1
                     elif countClass == "HV":

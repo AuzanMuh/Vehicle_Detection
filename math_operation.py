@@ -21,9 +21,6 @@ def centeroidPinHoleMode(height, focal, altitude, theta, yCoordinate):
     lCentroid = round(lCentroid, 4)
     delta = round(delta, 4)
 
-    if (theta + delta) > 90.0:
-        lCentroid = "unknown distance"
-
     # print "delta: {0} | lCentroid: {1}".format(delta, lCentroid)
     return lCentroid
 
@@ -34,48 +31,48 @@ def vertikalPinHoleModel(height, focal, altitude, theta, y1, y2, maxHighLV, maxH
     # theta : sudut kemiringan kamera (derajat)
     # y1' : indeks piksel terdepan kendaraan (kordinat y)
     # y2' : indeks piksel terbelakang kendaraan (kordinat y)
-    # Lx1 -> |O'X1| : jarak titik terdepan kendaraan dengan kamera (m)
-    # Lx2 -> |O'X2| : jarak titik blindspot belakang kendaraan (m)
-    # X2G -> |X2G| : jarak belakang kendaraan dengan titik blindspot belakang kendaraan (m)
+    # Ly1 -> |O'X1| : jarak titik terdepan kendaraan dengan kamera (m)
+    # Ly2 -> |O'X2| : jarak titik blindspot belakang kendaraan (m)
+    # Y2G -> |Y2G| : jarak belakang kendaraan dengan titik blindspot belakang kendaraan (m)
 
     delta1 = math.degrees(math.atan(math.fabs((height / 2) - y1) / focal))
     delta2 = math.degrees(math.atan(math.fabs((height / 2) - y2) / focal))
 
     if y1 >= height / 2:
-        Lx1 = altitude * math.tan(math.radians(theta + delta1))
+        Ly1 = altitude * math.tan(math.radians(theta + delta1))
     else:
-        Lx1 = altitude * math.tan(math.radians(theta - delta1))
+        Ly1 = altitude * math.tan(math.radians(theta - delta1))
 
     if y2 >= height / 2:
-        Lx2 = altitude * math.tan(math.radians(theta + delta2))
+        Ly2 = altitude * math.tan(math.radians(theta + delta2))
     else:
-        Lx2 = altitude * math.tan(math.radians(theta - delta2))
+        Ly2 = altitude * math.tan(math.radians(theta - delta2))
 
-    Lv = math.fabs(Lx1 - Lx2)
+    Lv = math.fabs(Ly1 - Ly2)
 
     if y2 >= height / 2:
-        X2GLV = maxHighLV * math.tan(math.radians(theta + delta2))
-        X2GHV = maxHighHV * math.tan(math.radians(theta + delta2))
+        Y2G_LV = maxHighLV * math.tan(math.radians(theta + delta2))
+        Y2G_HV = maxHighHV * math.tan(math.radians(theta + delta2))
     else:
-        X2GLV = maxHighLV * math.tan(math.radians(theta - delta2))
-        X2GHV = maxHighHV * math.tan(math.radians(theta - delta2))
+        Y2G_LV = maxHighLV * math.tan(math.radians(theta - delta2))
+        Y2G_HV = maxHighHV * math.tan(math.radians(theta - delta2))
 
-    LengthLV = (Lx2 - (Lx1 + X2GLV))
-    LengthHV = (Lx2 - (Lx1 + X2GHV))
+    LengthLV = (Ly2 - (Ly1 + Y2G_LV))
+    LengthHV = (Ly2 - (Ly1 + Y2G_HV))
 
     if LengthLV <= maxLengthLV:
         Lv = LengthLV
     else:
         Lv = LengthLV
 
-    Lv = Lx2 - Lx1
+    Lv = Ly2 - Ly1
 
     delta1 = round(delta1, 3)
     delta2 = round(delta2, 3)
-    Lx1 = round(Lx1, 4)
-    Lx2 = round(Lx2, 4)
-    X2GLV = round(X2GLV, 4)
-    X2GHV = round(X2GHV, 4)
+    Ly1 = round(Ly1, 4)
+    Ly2 = round(Ly2, 4)
+    Y2G_LV = round(Y2G_LV, 4)
+    Y2G_HV = round(Y2G_HV, 4)
     Lv = round(Lv, 3)
 
     # print "delta1: {0} | delta2: {1} | Lx1: {2} | Lx2: {3} | X2GLV: {4} | X2GHVC: {5}| Lv: {6}".format(delta1, delta2, Lx1, Lx2, X2GLV, X2GHV, Lv)
@@ -98,23 +95,23 @@ def horizontalPinHoleModel(width, focal, altitude, x1, x2, lengthObject):
 
     OX = math.sqrt(math.pow(lengthObject, 2) + math.pow(altitude, 2))
 
-    Lw1 = math.tan(math.radians(delta1)) * OX
-    Lw2 = math.tan(math.radians(delta2)) * OX
+    Lx1 = math.tan(math.radians(delta1)) * OX
+    Lx2 = math.tan(math.radians(delta2)) * OX
 
     if (x1 <= width / 2) and (x2 >= width / 2):
-        Lw = round((Lw2 + Lw1), 3)
+        Lx = round((Lx2 + Lx1), 3)
     else:
-        Lw = round(math.fabs(Lw2 - Lw1), 3)
+        Lx = round(math.fabs(Lx2 - Lx1), 3)
 
     delta1 = round(delta1, 3)
     delta2 = round(delta2, 3)
     lengthObject = round(lengthObject, 2)
     OX = round(OX, 4)
-    Lw1 = round(Lw1, 4)
-    Lw2 = round(Lw2, 4)
+    Lx1 = round(Lx1, 4)
+    Lx2 = round(Lx2, 4)
 
     # print "delta1: {0} | delta2: {1} | Length: {2} | OX: {3} | Lw1: {4} | Lw2: {5} | widthObject: {6}".format(delta1, delta2, lengthObject, OX, Lw1, Lw2, Lw)
-    return Lw
+    return Lx
 
 def funcY_line(x1, y1, x2, y2, X):
     # m : line gradient
@@ -199,11 +196,7 @@ def getCoordinateFromDistance(height, focal, altitude, theta, distance):
     alpha = math.degrees(math.atan(distance / altitude))
     delta = theta - alpha
     yCoordinate = focal * math.tan(math.radians(delta))
-
-    if alpha <= theta:
-        yCoordinate += (height / 2)
-    elif alpha > theta:
-        yCoordinate = (height / 2) - yCoordinate
+    yCoordinate += (height / 2)
 
     # print "alpha: {0} | delta: {1}".format(alpha, delta)
     return yCoordinate
