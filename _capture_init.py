@@ -172,8 +172,6 @@ class QtCapture:
         self.tempListVehicle = []
         self.pastListVehicle = []
         self.currentTrajectory = []
-        self.tempTrajectory = []
-        self.pastTrajectory = []
 
         # Start Capture Video
         self.filename = filename
@@ -236,7 +234,6 @@ class QtCapture:
         # Closing file
         if self.getVideoOutput():
             self.file.write("Filename:" + "," + str(self.filename) + "\n" +
-                            "FOV:" + "," + str(self.getFOV()) + "\n" +
                             "Focal:" + "," + str(self.getFocal()) + "\n" +
                             "Angle:" + "," + str(self.getElevated()) + "\n" +
                             "Altitude:" + "," + str(self.getAlt()) + "\n" +
@@ -319,7 +316,7 @@ class QtCapture:
             # -- [x] Thresholds to Binary ----------------------------#
             # IS    :
             # FS    :
-            thresholdLevel = 30
+            thresholdLevel = 40
             _, threshold = cv2.threshold(gaussianBlur_frame, thresholdLevel, 255, cv2.THRESH_BINARY)
             # _, blur1threshold = cv2.threshold(averageBlur, thresholdLevel, 255, cv2.THRESH_BINARY)
             # _, blur2threshold = cv2.threshold(gaussianBlur_frame, thresholdLevel, 255, cv2.THRESH_BINARY)
@@ -357,7 +354,7 @@ class QtCapture:
             [0, 1, 0]], dtype=np.uint8)
 
         morph_frame = cv2.erode(bin_frame, kernel, iterations=3)
-        #morph_frame = cv2.dilate(morph_frame, kernel, iterations=2)
+        # morph_frame = cv2.dilate(morph_frame, kernel, iterations=2)
         bin_frame = morph_frame
 
         # -- [x] Shadow Removal ---------------------------------#
@@ -381,7 +378,7 @@ class QtCapture:
             _, thresholdShadow = cv2.threshold(grayShadow, 5, 255, cv2.THRESH_BINARY)
             dilateShadow = cv2.dilate(thresholdShadow, kernel, iterations=3)
             erodeShadow = cv2.erode(dilateShadow, kernel, iterations=1)
-            #openingShadow = cv2.morphologyEx(thresholdShadow, cv2.MORPH_OPEN, kernel, iterations=2)
+            # openingShadow = cv2.morphologyEx(thresholdShadow, cv2.MORPH_OPEN, kernel, iterations=2)
             bin_frame = erodeShadow
 
             binMerge = cv2.merge([bin_frame, bin_frame, bin_frame])
@@ -451,7 +448,7 @@ class QtCapture:
             centerVehicle = mo.centeroidPinHoleMode(heightInFullFrame, horizontalFocal, altitude, theta, y1Vehicle)
             widthVehicle = mo.horizontalPinHoleModel(self.width_frame, horizontalFocal, altitude, xContour, (xContour + widthContour), centerVehicle)
 
-            alternative = True
+            alternative = False
             if alternative:
                 fov = 160.0
                 theta = 90.0 - theta
@@ -477,7 +474,7 @@ class QtCapture:
                 xCentroid = int(Moment['m10'] / Moment['m00'])
                 yCentroid = int(Moment['m01'] / Moment['m00'])
 
-                print "length: {0} | width: {1}".format(lengthVehicle, widthVehicle)
+                # print "length: {0} | width: {1}".format(lengthVehicle, widthVehicle)
 
                 # -- [x] Vehicle Classification -------------#
                 # IS    :
@@ -505,13 +502,6 @@ class QtCapture:
             self.pastListVehicle = self.currentListVehicle
         elif self.currentListVehicle.__len__() < self.pastListVehicle.__len__():
             self.currentListVehicle = self.pastListVehicle
-
-        if self.pastTrajectory.__len__() == 0:
-            self.pastTrajectory = self.currentTrajectory
-        elif self.pastTrajectory.__len__() != self.currentTrajectory.__len__():
-            self.pastTrajectory = self.currentTrajectory
-        elif self.currentTrajectory.__len__() < self.pastTrajectory.__len__():
-            self.currentTrajectory = self.pastTrajectory
 
         # -- [x] Hungarian Algorithm ----------------------------#
         # IS    :
@@ -579,9 +569,6 @@ class QtCapture:
                 lengthVehicle = self.currentListVehicle[i].vehicleLength
                 vehicleClassification = self.currentListVehicle[i].vehicleClass
                 idState = self.currentListVehicle[i].idState
-
-                xCenteroidBefore = self.pastTrajectory[i].xCoordinate
-                yCenteroidBefore = self.pastTrajectory[i].yCoordinate
 
                 # print "vid count : {0} | idState: {1} | xCord: {2} | yCord: {3} | xLastCord: {4} | yLastCord: {5}".format(vehicleID, idState, xCentroid, yCentroid, xCenteroidBefore, yCenteroidBefore)
 

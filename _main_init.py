@@ -527,7 +527,7 @@ class MainInit(QMainWindow, main_ui):
         theta = int(self.getElevated())
 
         # Set threshold distance for registration and detection line
-        distanceRegistrationLine = 3.0
+        distanceRegistrationLine = 1.5
         distanceDetectionLine = 2 * float(self.getLengthHV())
 
         self.getCoordinate = GetCoordinate(altitude, focal, theta)
@@ -585,7 +585,7 @@ class MainInit(QMainWindow, main_ui):
         detectX1, detectY1, detectX2, detectY2 = self.getDetectLine()
         registX1, registY1, registX2, registY2 = self.getRegistrationLine()
 
-        self.tabWidget.setTabEnabled(0, False)
+        self.tabWidget.setTabEnabled(0, True)
         self.tabWidget.setTabEnabled(1, True)
         self.tabWidget.setCurrentIndex(1)
 

@@ -65,7 +65,7 @@ def vertikalPinHoleModel(height, focal, altitude, theta, y1, y2, maxHighLV, maxH
     else:
         Lv = LengthLV
 
-    Lv = Ly2 - Ly1
+    #Lv = Ly2 - Ly1
 
     delta1 = round(delta1, 3)
     delta2 = round(delta2, 3)
