@@ -96,9 +96,9 @@ class MainInit(QMainWindow, main_ui):
         self.pushButton_preview.clicked.connect(self.previewVideo)
         self.pushButton_calculate.clicked.connect(self.calculateCoordinate)
         # 1.4.3.1 Detection Line
-        self.setDetectionLine("500", "122", "615", "122")
+        self.setDetectionLine("480", "122", "635", "122")
         # 1.4.3.2 Registration Line
-        self.setRegistrationLine("385", "424", "742", "424")
+        self.setRegistrationLine("365", "424", "772", "424")
 
         # 1.5 Button Help and Set
         self.pushButton_helpSetting.clicked.connect(self.helpSetting)

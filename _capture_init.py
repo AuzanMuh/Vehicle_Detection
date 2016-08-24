@@ -316,7 +316,7 @@ class QtCapture:
             # -- [x] Thresholds to Binary ----------------------------#
             # IS    :
             # FS    :
-            thresholdLevel = 40
+            thresholdLevel = 50
             _, threshold = cv2.threshold(gaussianBlur_frame, thresholdLevel, 255, cv2.THRESH_BINARY)
             # _, blur1threshold = cv2.threshold(averageBlur, thresholdLevel, 255, cv2.THRESH_BINARY)
             # _, blur2threshold = cv2.threshold(gaussianBlur_frame, thresholdLevel, 255, cv2.THRESH_BINARY)
@@ -468,7 +468,7 @@ class QtCapture:
             size = 2
             areaThreshold = 10
 
-            if (widthVehicle >= 1.0) and (widthVehicle <= 4.0) and (lengthVehicle >= 2) and (lengthVehicle < 80) and (areaContours >= (float(areaBoundary) * (float(areaThreshold) / 100))):
+            if (widthVehicle >= 1.0) and (widthVehicle <= 3.0) and (lengthVehicle >= 2) and (lengthVehicle < 18) and (areaContours >= (float(areaBoundary) * (float(areaThreshold) / 100))):
                 # Get moment for centroid
                 Moment = cv2.moments(cnt)
                 xCentroid = int(Moment['m10'] / Moment['m00'])
@@ -493,7 +493,12 @@ class QtCapture:
                 # -- [x] Set Vehicle Identity ---------------#
                 # IS    :
                 # FS    :
-                self.currentListVehicle.append(self.vehicle(self.totalVehicle + 1 + self.currentListVehicle.__len__(), xCentroid, yCentroid, lengthVehicle, widthVehicle, vehicleClassification, xContour, yContour, widthContour, highContour, False))
+
+                xPredictLeftRoad = mo.funcX_line(detectX1, detectY1, registX1, registY1, y1Vehicle)
+                distLeftRoadtoVehicle = mo.horizontalPinHoleModel(self.width_frame, horizontalFocal, altitude, xPredictLeftRoad, (xContour + (widthContour / 2)), centerVehicle)
+
+                # print "left road to center {0} meter | camera to front vehicle {1} meter".format(distLeftRoadtoVehicle, centerVehicle)
+                self.currentListVehicle.append(self.vehicle(self.totalVehicle + 1 + self.currentListVehicle.__len__(), xCentroid, yCentroid,distLeftRoadtoVehicle, centerVehicle, lengthVehicle, widthVehicle, vehicleClassification, xContour, yContour, widthContour, highContour, False))
                 self.currentTrajectory.append(self.trajectory(self.totalVehicle + 1 + self.currentListVehicle.__len__(), xCentroid, yCentroid))
 
         if self.pastListVehicle.__len__() == 0:
@@ -517,10 +522,10 @@ class QtCapture:
 
             for i in range(self.pastListVehicle.__len__()):
                 for j in range(self.currentListVehicle.__len__()):
-                    x1 = self.pastListVehicle[i].xCoordinate
-                    y1 = self.pastListVehicle[i].yCoordinate
-                    x2 = self.currentListVehicle[j].xCoordinate
-                    y2 = self.currentListVehicle[j].yCoordinate
+                    x1 = self.pastListVehicle[i].distLeft
+                    y1 = self.pastListVehicle[i].distFront
+                    x2 = self.currentListVehicle[j].distLeft
+                    y2 = self.currentListVehicle[j].distFront
                     distance[j][i] = mo.euclideanDistance(x1, y1, x2, y2)
 
             hungarian = Munkres()
