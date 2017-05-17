@@ -575,6 +575,8 @@ class QtCapture:
                 vehicleClassification = self.currentListVehicle[i].vehicleClass
                 idState = self.currentListVehicle[i].idState
 
+                print int(PrimSat[xCentroid, yCentroid])
+
                 # print "vid count : {0} | idState: {1} | xCord: {2} | yCord: {3} | xLastCord: {4} | yLastCord: {5}".format(vehicleID, idState, xCentroid, yCentroid, xCenteroidBefore, yCenteroidBefore)
 
                 yPredictRegist = mo.funcY_line(registX1, registY1, registX2, registY2, xCentroid)
@@ -639,8 +641,8 @@ class QtCapture:
             img = QtGui.QImage(show_frame, show_frame.shape[1], show_frame.shape[0], QtGui.QImage.Format_RGB888)
             # RGB image - Format_RGB888
         else:
-            show_frame = bin_frame
-            img = QtGui.QImage(show_frame, show_frame.shape[1], show_frame.shape[0], QtGui.QImage.Format_Indexed8)
+            show_frame = PrimSat
+            img = QtGui.QImage(show_frame, show_frame.shape[1], show_frame.shape[0], QtGui.QImage.Format_RGB16)
             # Gray scale, binary image - Format_Indexed8
 
         pix = QtGui.QPixmap.fromImage(img)
