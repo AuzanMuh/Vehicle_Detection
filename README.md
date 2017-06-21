@@ -17,8 +17,8 @@ Installation
 ------------
 1. Install the OpenCV with contrib
 2. Install PythonQt
-3. Install Munkress in Python Pip
-4. Install psutl in Python Pip
+3. Install munkres in Python Pip
+4. Install psutil in Python Pip
 
 Requirement
 ----------
